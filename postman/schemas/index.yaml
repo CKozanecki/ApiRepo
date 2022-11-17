@@ -1,0 +1,1450 @@
+openapi: '3.0.3'
+info:
+  version: '2.0.0'
+  title: 'Public screener endpoints'
+  description: Public screener api
+
+paths:
+  /p/screeners/{uuid}:
+    summary: Get the screener data
+    description: This endpoint returns the complete screener data including questions, answers, templates, and tokens
+    parameters:
+      - name: uuid
+        description: Screener uuid
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Screener details
+      responses:
+        200:
+          description: Screener details 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Screener'
+        400:
+          description: Bad screener id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /p/screeners/{uuid}/questions:
+    summary: Get the screener questions data
+    description: This endpoint returns the complete screener questions data
+    parameters:
+      - name: uuid
+        description: Screener uuid
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Screener questions
+      responses:
+        200:
+          description: Screener questions 
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Question'
+        400:
+          description: Bad screener id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /p/screeners/{uuid}/introductions:
+    summary: Get the screener introductions data
+    description: This endpoint returns the complete screener introductions data
+    parameters:
+      - name: uuid
+        description: Screener uuid
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Screener introductions
+      responses:
+        200:
+          description: Screener introductions 
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Introduction'
+        400:
+          description: Bad screener id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /p/screeners/{uuid}/templates:
+    summary: Get the screener templates data
+    description: This endpoint returns the complete screener templates data
+    parameters:
+      - name: uuid
+        description: Screener uuid
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Screener templates
+      responses:
+        200:
+          description: Screener templates 
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Template'
+        400:
+          description: Bad screener id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /p/screeners/{uuid}/referral:
+    summary: Creates the referral record and returns the auth token
+    description: The auth token can be used to save referral data in subsequent calls. This prevents CSRF and MITM attacks on the end user
+    parameters:
+      - name: uuid
+        description: Screener uuid
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      summary: Create new referral record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Empty obj {} required at minimum
+              properties:
+                utm_source:
+                  type: string
+                  description: The utm code the user is associated with when they visited the screener. This is normally in the querystring or localstorage (from parent website).
+      responses:
+        200:
+          description: Referral record with token 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Referral'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /p/screeners/{uuid}/version:
+    summary: Get the screener version
+    description: The screener version can be either New or Legacy
+    parameters:
+      - name: uuid
+        description: Screener uuid
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Get the screener api version
+      responses:
+        200:
+          description: Screener api version
+          content:
+            application/json:
+              schema:
+                type: string
+                enum:
+                  - Legacy
+                  - New
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /p/screeners/{uuid}/capipixel:
+    summary: Post a capi event
+    description: This will record a capi pixel event to the system and notify the dig team
+    parameters:
+      - name: uuid
+        description: Screener uuid
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      summary: Create a capi event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CapiEvent'
+      responses:
+        200:
+          description: Successful update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /p/referrals/{id}/contact:
+    summary: Update contact information on the referral
+    description: Both PUT and POST perform the same function
+    parameters:
+      - name: id
+        description: Referral id
+        in: path
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: Update the referral contact information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: The contact fields are optional. Unspecified values will be overwritten with an empty string
+              properties:
+                firstName:
+                  type: string
+                middleName:
+                  type: string
+                lastName:
+                  type: string
+                cellPhone:
+                  type: string
+                homePhone:
+                  type: string
+                callbackTime:
+                  type: string
+                permission:
+                  type: string
+                email:
+                  type: string
+                address:
+                  type: string
+                zip:
+                  type: string
+                caregiverName:
+                  type: string
+                caregiverPhoneNumber:
+                  type: string
+                caregiverEmail:
+                  type: string
+      responses:
+        200:
+          description: Successful update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update the referral contact information
+      responses:
+        200:
+          description: Successful update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /p/referrals/{id}/answer:
+      summary: Update the referral answer record
+      description: This endpoint saves the referral's answers to the system
+      parameters:
+        - name: id
+          description: Referral id
+          in: path
+          required: true
+          schema:
+            type: integer
+      post:
+        summary: Update the referral answer record
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerRequest'
+        responses:
+          200:
+            description: Successful update
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Success'
+          400:
+            description: Bad request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
+          500:
+            description: Unexpected server error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
+      put:
+        summary: Update the referral answer record
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerRequest'
+        responses:
+          200:
+            description: Successful update
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Success'
+          400:
+            description: Bad request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
+          500:
+            description: Unexpected server error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'                
+  
+  /p/referrals/{id}/disposition:
+    summary: Get the referral disposition
+    description: This endpoint will return the referral's disposition status (DQ, PQ, NoSite, etc).
+    parameters:
+      - name: id
+        description: Referral id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get the referral disposition
+      responses:
+        200:
+          description: Referral disposition object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferralDisposition'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /p/referrals/{id}/opt-out:
+    summary: Update referral opt-out
+    description: >
+      This endpoint will opt out a referral from having their contact information stored in the system. 
+      By default a referral is opted-in.
+      POST and PUT perform the same action.
+    parameters:
+      - name: id
+        description: Referral id
+        in: path
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: Referral opt-out of saving contact information
+      responses:
+        200:
+          description: Referral disposition object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Referral opt-out of saving contact information
+      responses:
+        200:
+          description: Referral disposition object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /p/referrals/{id}/sites:
+    summary: Get the site list
+    description: >
+      This endpoint gets and assigns sites associated with the referral. 
+      The `?sid` is important if SAM is enabled for the screener. 
+      `sid` asks the system to auto-assign a site to a referral. 
+      The site will not be auto-assigned if it's too far from the referral's address. In this case the endpoint will return a normal site list (same code path as if ?sid was omitted).
+      POST and PUT perform the same action.
+    parameters:
+      - name: id
+        description: Referral id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: sid
+        description: Optional param, digs id or alt site id. This is an optional param. This value is typically obtained from the local/session storage or query string param (?sid)
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: distance
+        description: Optional param, defaults to table value. This represents the max distance the user is willing to travel to a site
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: distanceUnits
+        description: Optional param, defaults to miles. Can be either miles or kilometers
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+            - miles
+            - kilometers
+    get:
+      summary: Get sites available to the referral
+      responses:
+        200:
+          description: Site list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Site'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Assign site to the referral
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteRequest'
+      responses:
+        200:
+          description: Site saved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Assign site to the referral
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteRequest'
+      responses:
+        200:
+          description: Site saved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /p/referrals/{id}/warm-transfer:
+    summary: Set Call Center Referral Warm Transfer 
+    description: >
+      This endpoint is used when a call center referral has initiated a Warm Transfer; in other words,
+      when the call center call the study site to transfer the referral's call to site personnel.
+      A status record will be added or set based upon whether the transfer completed successfully.
+    parameters:
+      - name: id
+        description: Referral id
+        in: path
+        required: true
+        schema:
+          type: integer
+     
+    post:
+      summary: Create the Referral Event Record for Warm Transfer.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WarmTransfer'
+      responses:
+        200:
+          description: Referral Event Record for the Warm Transfer created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /p/referrals/{id}/validate-email:
+    summary: Send message to Elastic Cloud.
+    description: >
+      Validate an email address and get feedback on the suggested email.
+    parameters:
+      - name: id
+        description: Referral id
+        in: path
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: Request a validated email address.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  description: Email address to validate
+      responses:
+        200:
+          description: Email validation successful
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - suggested
+                properties:
+                  suggested:
+                    type: string
+                    description: The suggested email address
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /p/screeners/{id}/logging:
+    summary: Send message to Elastic Cloud.
+    description: >
+      This endpoint is used to send any logging messages from the frontend to the backend so it can
+      log this and get ingested by the Elastic Agents in the kluster. Any error messages or any
+      kinf of telemetry can be sent to the backend.
+    parameters:
+      - name: id
+        description: Screener Id or GUID.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: ctm-guid
+        description: The GUID of the Screener (IFrame in DB).
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: ctm-ip
+        description: The IP Address of the screener taker.
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: ctm-loc
+        description: The location of the screener taker; either address, or latitude/longitude.
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: ctm-refid
+        description: The Referral Id.
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: ctm-scrid
+        description: The Screener Id (not the GUID, the actual Id).
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: ctm-stdid
+        description: The Study Id.
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: ctm-uuid
+        description: The session UUID of the screener.
+        in: header
+        required: false
+        schema:
+          type: string
+    post:
+      summary: Log the message to the backend.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Log'
+      responses:
+        200:
+          description: Site saved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Success:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          default: true
+
+    referralId:
+      description: Unique referral id
+      type: integer
+
+    Referral:
+      type: object
+      required:
+        - referralId
+        - token
+      properties:
+        referralId:
+          $ref: '#/components/schemas/referralId'
+        token:
+          type: string
+          description: Auth token to be used on subsequent requests to the public referral endpoints
+
+    AnswerRequest:
+      description: The data field is optional
+      type: object
+      required:
+        - questionId
+        - answerId
+        - selected
+      properties:
+        questionId:
+          type: integer
+        answerId:
+          type: integer
+        data:
+          type: object
+          description: |
+            Anonymous object who's shema depends on question type. For example, textbox would send string, bmi would send { "feet": 6, "inch": 0, "weight": 220 }
+        selected:
+          type: boolean
+          description: true if the user selects an answer, false if they deselect. All user input answers should be designated as `true`
+
+    ReferralDisposition:
+      description: Referral disposition object. Contains the DQ/PQ status as well as the protocols the referral qualified for.
+      type: object
+      required:
+        - disposition
+        - indeterminate
+        - protocolsQualifiedFor
+        - message
+      properties:
+        disposition:
+          type: string
+          description: The DQ or PQ status. Integer statuses here https://github.com/clinicaltrialmedia/sm-components/blob/dev/src/constants/consts.ts#L12
+          enum:
+            - PQ
+            - DQ
+            - DQCallingForOther
+            - DQNoInterest
+            - DQAge
+            - DQBMI
+            - DQWaitingForSite
+            - NoSite
+            - Duplicate
+        indeterminate:
+          type: boolean
+          description: If true it means the referral did not complete the screener yet. I.e. they did not answer the minimum number of questions.
+        protocolsQualifiedFor:
+          type: array
+          items:
+            type: string
+        message:
+          type: string
+          description: The disposition message for the user
+
+    Screener:
+      description: The screener details object
+      type: object
+      required:
+        - screenerId
+        - screenerName
+        - screenerType
+        - studyName
+        - screenerCategory
+        - screenerStatus
+        - introductions
+        - templates
+        - siteSearchRadius
+        - questions
+        - config
+      properties:
+        screenerId:
+          type: integer
+        screenerName:
+          type: string
+        screenerType:
+          type: string
+          enum:
+            - Web
+            - Call Center
+        studyName:
+          type: string
+        screenerCategory:
+          type: integer
+        screenerStatus:
+          type: string
+          enum:
+            - Active
+            - Practice
+            - Locked
+        introductions:
+          description: All introductions associated with the screener
+          type: array
+          items:
+              $ref: '#/components/schemas/Introduction'
+        templates:
+          description: All templates and independent scripts associated with the screener
+          type: array
+          items:
+              $ref: '#/components/schemas/Template'
+        siteSearchRadius:
+          type: integer
+          default: 100
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
+        config:
+          $ref: '#/components/schemas/ExtraConfig'
+
+    Question:
+      type: object
+      required:
+        - questionId
+        - controlType
+        - questionType
+        - rescreen
+        - text
+        - answers
+      properties:
+        questionId:
+          type: integer
+        controlType:
+          type: string
+          enum:
+            - Dropdown (Single Selection)
+            - Multiple choice (Single Selection)
+            - Multiple choice (Multi Selection)
+            - Text Box Entry
+            - Date
+            - BMI
+            - IntroText
+            - CallingFor
+        questionType:
+          type: string
+          enum:
+            - CSelf
+            - COther
+            - Permission
+            - Age
+            - BMI
+            - Dynamic
+        rescreen:
+          type: boolean
+          default: false
+        text:
+          type: string
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Answer'
+        jumpTos:
+          type: array
+          items:
+            $ref: '#/components/schemas/JumpTo'
+        toolTip:
+          type: object
+          properties:
+            label: 
+              type: string
+            text: 
+              type: string
+
+    Introduction:
+      type: object
+      required:
+        - id
+        - heading
+        - html
+      properties:
+        id:
+          description: Introduction id
+          type: integer
+        heading:
+          description: Intro heading
+          type: string
+        html:
+          description: Introduction body text, can be a mix of html
+          type: string
+
+    Template:
+      type: object
+      required:
+        - type
+        - html
+      properties:
+        name:
+          description: Template type
+          type: string
+        html:
+          description: Template html text
+          type: string
+
+    ExtraConfig:
+      description: Custom configuration object for the screener
+      type: object
+      properties:
+        color:
+          type: string
+        phoneValidation:
+          type: boolean
+        isPhysicianShow:
+          type: boolean
+          description: Determines whether the contact fields for the physician should be shown
+        showSiteLocator:
+          type: boolean
+          description: Determines if the site locator should be shown. Rarely is this false.
+        showRecaptcha:
+          type: boolean
+          description: If true we want the screener to perform the recaptcha challenge on screener submit
+        recaptchaVersion:
+          type: string
+          enum:
+            - v2
+            - v3
+          description: Version of recaptcha to use. Ideally, v3 on all new screeners.
+        showSelfOtherQuestion:
+          type: boolean
+        ageQuestionType:
+          type: string
+          enum:
+            - None
+            - Age
+            - DateOfBirth
+            - BirthYear
+          description: None = 0, Age = 1, DateOfBirth = 2, BirthYear = 3
+        tokens:
+          type: object
+          description: Map of tokens to replace in question and template text and labels
+        base64Encoded:
+          type: boolean
+        ageQuestion:
+          type: object
+          required:
+            - placeholders
+            - dateformats
+            - datePickerLocale
+          properties:
+            placeholders:
+              type: array
+              items:
+                type: string
+            dateformats:
+              type: array
+              items:
+                type: string
+            datePickerLocale:
+              type: string
+        bmiQuestion:
+          type: object
+          required:
+            - title
+            - heightTitle
+            - heightLabel
+            - heightSecondaryLabel
+            - weightTitle
+            - weightLabel
+            - weightSecondaryLabel
+          properties:
+            title:
+              type: string
+            heightTitle:
+              type: string
+            heightLabel:
+              type: string
+            heightSecondaryLabel:
+              type: string
+            weightTitle:
+              type: string
+            weightLabel:
+              type: string
+            weightSecondaryLabel:
+              type: string
+        contactForm:
+          type: object
+          description: Deprecated
+        contactForm2:
+          type: object
+          properties:
+            firstName:
+              $ref: '#/components/schemas/ConfigContact'
+            middleName:
+              $ref: '#/components/schemas/ConfigContact'
+            lastName:
+              $ref: '#/components/schemas/ConfigContact'
+            cellPhone:
+              $ref: '#/components/schemas/ConfigContact'
+            homePhone:
+              $ref: '#/components/schemas/ConfigContact'
+            callbackTime:
+              $ref: '#/components/schemas/ConfigContact'
+            selectCallbackTime:
+              $ref: '#/components/schemas/ConfigContact'
+            morning:
+              $ref: '#/components/schemas/ConfigContact'
+            afternoon:
+              $ref: '#/components/schemas/ConfigContact'
+            evening:
+              $ref: '#/components/schemas/ConfigContact'
+            permission:
+              $ref: '#/components/schemas/ConfigContact'
+            select:
+              $ref: '#/components/schemas/ConfigContact'
+            yes:
+              $ref: '#/components/schemas/ConfigContact'
+            no:
+              $ref: '#/components/schemas/ConfigContact'
+            email:
+              $ref: '#/components/schemas/ConfigContact'
+            address:
+              $ref: '#/components/schemas/ConfigContact'
+            zip:
+              $ref: '#/components/schemas/ConfigContact'
+            physName:
+              $ref: '#/components/schemas/ConfigContact'
+            physEmail:
+              $ref: '#/components/schemas/ConfigContact'
+            physPhone:
+              $ref: '#/components/schemas/ConfigContact'
+            submit:
+              $ref: '#/components/schemas/ConfigContact'
+        showPermissionToLeaveMessage:
+          type: boolean
+          description: Determines whether the contact form displays the permission to leave message question
+        defaultPhoneCountry:
+          type: string
+        userAgreement1Label:
+          type: string
+        userAgreement2Label:
+          type: string
+        userAgreementTrigger:
+          type: string
+        skipQuestions:
+          type: array
+          items:
+            type: object
+            required:
+              - skip
+              - when
+            properties:
+              skip:
+                type: string
+              when:
+                type: array
+                items:
+                  type: string
+        moveQuestionAfter:
+          type: array
+          items:
+            type: object
+            required:
+              - move
+              - after
+            properties:
+              move:
+                type: string
+              after:
+                type: string
+        screenerPaddingTop:
+          type: string
+        calendly:
+          type: object
+          required:
+            - showCalendly
+            - url
+            - btnTitle
+          properties:
+            showCalendly:
+              type: boolean
+            url:
+              type: string
+            btnTitle:
+              type: string
+        showZipOnly:
+          type: boolean
+          description: Determines whether the contact form hides the address field and only displays the zip code field
+        hideSiteLocator:
+          type: boolean
+        noSiteLocatorRoute:
+          type: string
+        cultureInfo:
+          type: string
+        hiddenQuestions:
+          type: array
+          items:
+            type: string
+        autoAnswer:
+          type: array
+          items:
+            type: object
+            required:
+              - queType
+              - questionText
+              - answers
+            properties:
+              queType:
+                type: string
+              questionText:
+                type: string
+              answers:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    low:
+                      type: integer
+                    high:
+                      type: integer
+                    answer:
+                      type: string
+                    defaultAnswer:
+                      type: string
+        textDirection:
+          type: string
+
+    ConfigContact:
+      description: The contact form configuration
+      type: object
+      properties:
+        label:
+          type: string
+          description: The contact field text label or heading
+        required:
+          type: boolean
+          description: If the field is a required field
+        show:
+          type: boolean
+          description: Whether or not to show the contact field
+        requiredMessage:
+          type: string
+          description: Warning text displayed when the field is required and has no input
+        validationMessage:
+          type: string
+          description: Error text to display if the validation fails
+
+    CapiEvent:
+      description: The facebook capi event object
+      type: object
+      required:
+        - event_name
+        - event_id
+        - event_source_url
+        - event_time
+        - action_source
+        - custom_data
+        - user_data
+      properties:
+        event_name:
+          type: string
+        event_id:
+          type: string
+        event_source_url:
+          type: string
+        event_time:
+          type: integer
+        action_source:
+          type: string
+          default: website
+        custom_data:
+          type: object
+          required:
+            - content_name
+            - content_ids
+            - order_id
+          properties:
+            content_name:
+              type: string
+              description: Screener title
+            content_ids:
+              type: array
+              description: Screener id (the integer id, not the guid)
+              items:
+                type: string
+            order_id:
+              type: string
+              description: The referral id
+        user_data:
+          type: object
+          required:
+            - em
+            - ph
+            - client_user_agent
+            - subscription_id
+            - zp
+            - client_ip_address
+            - fbp
+            - fbc
+          properties:
+            em:
+              type: array
+              items:
+                type: string
+                description: Email address
+            ph:
+              type: array
+              items:
+                type: string
+                description: Phone number
+            client_user_agent:
+              type: string
+              description: User agent
+            subscription_id:
+              type: string
+              description: Referral id
+            zp:
+              type: string
+              description: Zip/postal code
+            client_ip_address:
+              type: string
+              description: Ip address
+            fbp:
+              type: string
+              description: Facebook fbp https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/fbp-and-fbc
+            fbc:
+              type: string
+              description: Facebook click id (fbclid) https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/fbp-and-fbc
+    
+    Answer:
+      type: object
+      required:
+        - answerId
+        - text
+      properties:
+        answerId:
+          type: integer
+        text:
+          type: string
+          description: Answer label, it can be html
+
+    JumpTo:
+      type: object
+      required:
+        - questionId
+        - answerId
+        - text
+      properties:
+        questionId:
+          type: string
+          description: The question id to jump to
+        answerId:
+          type: integer
+          description: The answer that triggers the jump to
+        text:
+          type: string
+          description: Answer label that triggers the jump to (use answerId instead)
+
+    Site:
+      type: object
+      required:
+        - id
+        - name
+        - address
+        - zip
+        - distance
+        - distanceUnits
+        - autoAssigned
+      properties:
+        id:
+          type: integer
+          description: The site id
+        name:
+          type: string
+          description: The name of the site
+        address:
+          type: string
+          description: The site's address
+        zip:
+          type: string
+          description: The site's zip/postal code. This can have letters, numbers, and spaces
+        distance:
+          type: integer
+          description: The site's distance from the referral's address
+        distanceUnits:
+          type: string
+          enum:
+            - miles
+            - kilometers
+          description: The distance unit in miles or kilometers
+        autoAssigned:
+          type: boolean
+          description: If the site was auto-assigned via the SAM feature this flag will be true, otherwise false
+
+    SiteRequest:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          description: The site id
+
+    Error:
+      type: object
+      required:
+        - message
+        - code
+      properties:
+        message:
+          type: string
+          description: Error message
+        code:
+          type: integer
+          description: Error code
+
+    Log:
+      description: |
+        Other than message and level, this object can hold anything else the frontend needs to send to Elastic Cloud logging.
+      type: object
+      required:
+        - message
+        - level
+      properties:
+        message:
+          type: string
+          description: A description of the log or the details of the log.
+        level:
+          type: string
+          description: Either error, warn, fatal, info, debug, or trace.
+
+    WarmTransfer:
+      description: |
+        Warm Transfer status.
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: boolean
+          description: Whether the Warm Transfer completed successfully.
+
+  securitySchemes:
+    auth:
+      type: apiKey
+      name: AuthToken
+      in: header
+
+security:
+  - auth: []
